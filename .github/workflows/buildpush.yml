@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Build Backend JAR
         run: |
@@ -58,4 +58,3 @@ jobs:
       - name: Push Frontend Docker Image
         run: |
           docker push 924982554051.dkr.ecr.ap-south-1.amazonaws.com/frontend-repository-alan:${{ github.sha }}
-```
