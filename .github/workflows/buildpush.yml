@@ -1,3 +1,4 @@
+```yaml
 name: Build and Push Docker Images
 
 on:
@@ -13,6 +14,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build Backend JAR
+        run: |
+          cd backend
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -21,35 +34,29 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build Backend Image
       - name: Build Backend Docker Image
         run: |
           docker build -t backend ./backend
 
-      # Tag Backend Image
       - name: Tag Backend Docker Image
         run: |
           docker tag backend:latest 924982554051.dkr.ecr.ap-south-1.amazonaws.com/backend-repository-alan:${{ github.sha }}
 
-      # Push Backend Image
       - name: Push Backend Docker Image
         run: |
           docker push 924982554051.dkr.ecr.ap-south-1.amazonaws.com/backend-repository-alan:${{ github.sha }}
 
-      # Build Frontend Image
       - name: Build Frontend Docker Image
         run: |
           docker build -t frontend ./frontend
 
-      # Tag Frontend Image
       - name: Tag Frontend Docker Image
         run: |
           docker tag frontend:latest 924982554051.dkr.ecr.ap-south-1.amazonaws.com/frontend-repository-alan:${{ github.sha }}
 
-      # Push Frontend Image
       - name: Push Frontend Docker Image
         run: |
           docker push 924982554051.dkr.ecr.ap-south-1.amazonaws.com/frontend-repository-alan:${{ github.sha }}
+```
