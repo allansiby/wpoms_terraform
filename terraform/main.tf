@@ -71,11 +71,11 @@ resource "aws_security_group" "alan_sg" {
   }
 
   ingress {
-  description = "PostgreSQL"
-  from_port   = 5432
-  to_port     = 5432
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+    description = "PostgreSQL"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -119,9 +119,9 @@ resource "aws_instance" "myserver" {
 
   user_data = file("${path.module}/user_data.sh")
 
-  root_block_device { 
-    volume_size = 30 
-    volume_type = "gp3" 
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
   }
 
   tags = {
