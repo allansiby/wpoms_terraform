@@ -116,6 +116,12 @@ resource "aws_instance" "myserver" {
   }
 }
 
+#Volume modified
+root_block_device {
+  volume_size = 30
+  volume_type = "gp3"
+}
+
 # Elastic IP
 resource "aws_eip" "alan_eip" {
   domain = "vpc"

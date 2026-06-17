@@ -115,6 +115,8 @@ jobs:
 
             aws s3 cp s3://${{ vars.S3_BUCKET }}/docker-compose.yml .
 
+            docker system prune -af
+
             docker compose pull
 
             docker compose up -d
