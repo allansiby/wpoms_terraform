@@ -79,6 +79,10 @@ jobs:
           docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:latest
 
+      - name: Upload docker-compose.yml to S3
+        run: |
+          aws s3 cp docker-compose.yml s3://${{ vars.S3_BUCKET }}/docker-compose.yml
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -105,7 +109,11 @@ jobs:
 
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
 
+            mkdir -p ~/app
+
             cd ~/app
+
+            aws s3 cp s3://${{ vars.S3_BUCKET }}/docker-compose.yml .
 
             docker compose pull
 

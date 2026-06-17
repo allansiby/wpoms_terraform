@@ -17,3 +17,7 @@ output "public_dns" {
 output "elastic_ip" {
   value = aws_eip.alan_eip.public_ip
 }
+
+output "bucket_name" {
+  value = aws_s3_bucket.docker_compose_bucket.bucket
+}

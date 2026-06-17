@@ -107,6 +107,7 @@ resource "aws_instance" "myserver" {
   key_name                    = aws_key_pair.alan_key.key_name
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.alan_sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile_alan.name
 
   user_data = file("${path.module}/user_data.sh")
 
@@ -128,4 +129,13 @@ resource "aws_eip" "alan_eip" {
 resource "aws_eip_association" "alan_eip_assoc" {
   instance_id   = aws_instance.myserver.id
   allocation_id = aws_eip.alan_eip.id
+}
+
+#S3 Bucket
+resource "aws_s3_bucket" "docker_compose_bucket" {
+  bucket = "alan-devops-files"
+
+  tags = {
+    Name = "docker-compose-storage"
+  }
 }
