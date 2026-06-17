@@ -2,14 +2,14 @@ version: "3.8"
 
 services:
   frontend:
-    build: ./frontend
+    image: ${ECR_REGISTRY}/${FRONTEND_REPOSITORY}:${IMAGE_TAG}
     ports:
       - "3000:3003"
     depends_on:
       - backend
 
   backend:
-    build: ./backend
+    image: ${ECR_REGISTRY}/${BACKEND_REPOSITORY}:${IMAGE_TAG}
     ports:
       - "8081:8081"
     depends_on:
