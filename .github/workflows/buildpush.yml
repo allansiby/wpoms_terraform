@@ -9,6 +9,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      BACKEND_REPOSITORY: ${{ vars.BACKEND_REPOSITORY }}
+      FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -20,8 +24,8 @@ jobs:
           java-version: "21"
 
       - name: Build Backend JAR
+        working-directory: backend
         run: |
-          cd backend
           chmod +x mvnw
           ./mvnw clean package -DskipTests
 
@@ -33,22 +37,49 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Backend Docker Image
-        run: docker build -t backend ./backend
+      - name: Generate Image Tag
+        run: |
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+          SHORT_SHA=${GITHUB_SHA::12}
+          echo "IMAGE_TAG=${TIMESTAMP}-${SHORT_SHA}" >> $GITHUB_ENV
 
-      - name: Tag Backend Docker Image
-        run: docker tag backend:latest 924982554051.dkr.ecr.ap-south-1.amazonaws.com/backend-repository-alan:${{ github.sha }}
+      - name: Build Backend Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG ./backend
 
-      - name: Push Backend Docker Image
-        run: docker push 924982554051.dkr.ecr.ap-south-1.amazonaws.com/backend-repository-alan:${{ github.sha }}
+      - name: Tag Backend Latest
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$BACKEND_REPOSITORY:latest
 
-      - name: Build Frontend Docker Image
-        run: docker build -t frontend ./frontend
+      - name: Push Backend Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker push $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$BACKEND_REPOSITORY:latest
 
-      - name: Tag Frontend Docker Image
-        run: docker tag frontend:latest 924982554051.dkr.ecr.ap-south-1.amazonaws.com/frontend-repository-alan:${{ github.sha }}
+      - name: Build Frontend Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG ./frontend
 
-      - name: Push Frontend Docker Image
-        run: docker push 924982554051.dkr.ecr.ap-south-1.amazonaws.com/frontend-repository-alan:${{ github.sha }}
+      - name: Tag Frontend Latest
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_REPOSITORY:latest
+
+      - name: Push Frontend Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:latest
