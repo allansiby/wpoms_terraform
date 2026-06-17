@@ -100,6 +100,27 @@ resource "aws_key_pair" "alan_key" {
   public_key = file("${path.module}/alan-key.pub")
 }
 
+# EC2 Instance
+resource "aws_instance" "myserver" {
+  ami                         = data.aws_ami.al2023.id
+  instance_type               = "t3.micro"
+  key_name                    = aws_key_pair.alan_key.key_name
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.alan_sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile_alan.name
+
+  user_data = file("${path.module}/user_data.sh")
+
+  root_block_device { 
+    volume_size = 30 
+    volume_type = "gp3" 
+  }
+
+  tags = {
+    Name = "alan-terraform"
+  }
+}
+
 # Elastic IP
 resource "aws_eip" "alan_eip" {
   domain = "vpc"
