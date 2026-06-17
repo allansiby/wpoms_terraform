@@ -13,3 +13,7 @@ output "public_ip" {
 output "public_dns" {
   value = aws_instance.myserver.public_dns
 }
+
+output "elastic_ip" {
+  value = aws_eip.alan_eip.public_ip
+}

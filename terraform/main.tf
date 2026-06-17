@@ -24,16 +24,32 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# Create a Security Group in the default VPC
+# Security Group
 resource "aws_security_group" "alan_sg" {
   name        = "alan-terraform-sg"
-  description = "Allow SSH access"
+  description = "Allow SSH, Frontend, Backend, HTTP and HTTPS"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Frontend"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Backend"
+    from_port   = 8081
+    to_port     = 8081
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -66,7 +82,7 @@ resource "aws_security_group" "alan_sg" {
   }
 }
 
-
+# Get latest Amazon Linux 2023 AMI
 data "aws_ami" "al2023" {
   most_recent = true
 
@@ -78,11 +94,13 @@ data "aws_ami" "al2023" {
   }
 }
 
+# Key Pair
 resource "aws_key_pair" "alan_key" {
   key_name   = "alan-key"
   public_key = file("${path.module}/alan-key.pub")
 }
 
+# EC2 Instance
 resource "aws_instance" "myserver" {
   ami                         = data.aws_ami.al2023.id
   instance_type               = "t3.micro"
@@ -94,5 +112,20 @@ resource "aws_instance" "myserver" {
 
   tags = {
     Name = "alan-terraform"
-  }  
+  }
+}
+
+# Elastic IP
+resource "aws_eip" "alan_eip" {
+  domain = "vpc"
+
+  tags = {
+    Name = "alan-eip"
+  }
+}
+
+# Associate Elastic IP with EC2
+resource "aws_eip_association" "alan_eip_assoc" {
+  instance_id   = aws_instance.myserver.id
+  allocation_id = aws_eip.alan_eip.id
 }

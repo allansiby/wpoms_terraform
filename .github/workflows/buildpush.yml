@@ -107,8 +107,6 @@ jobs:
 
             cd ~/app
 
-            docker system prune -af
-
             docker compose pull
 
             docker compose up -d
