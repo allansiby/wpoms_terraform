@@ -124,7 +124,7 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }})
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }}:3000)
 
           if [ "$STATUS" != "200" ]; then
             echo "Application is not running"
