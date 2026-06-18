@@ -26,6 +26,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: maven
 
       - name: Build Backend JAR
         working-directory: backend
@@ -120,3 +121,14 @@ jobs:
             docker compose pull
 
             docker compose up -d
+
+      - name: Verify Deployment
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }})
+
+          if [ "$STATUS" != "200" ]; then
+            echo "Application is not running"
+            exit 1
+          fi
+
+          echo "Application is running successfully"
