@@ -124,17 +124,11 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          echo "Checking: http://${{ secrets.EC2_HOST }}:3000"
-
-          curl -v http://${{ secrets.EC2_HOST }}:3000
-
-          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }}:3000 || true)
-
-          echo "HTTP Status = $STATUS"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.EC2_HOST }}:3000)
 
           if [ "$STATUS" != "200" ]; then
-            echo "Application is not running"
+            echo "Deployment verification failed!"
             exit 1
           fi
 
-          echo "Application is running successfully"
+          echo "Deployment verified successfully!"
